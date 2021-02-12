@@ -1,0 +1,84 @@
+﻿
+@{
+    ViewBag.Title = "Question";
+}
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+
+<h2>QuestionIndex</h2>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        loadQuestion();
+
+    });
+
+
+    function SaveCandidateAnswer() {
+        var answerText = "";
+        $.each($("#tblQuestionOption tr").find("td:eq(0) input[type=radio]:checked"), function () {
+            answerText = $(this).val();
+        });
+        var candidateAnswer = { QuestionId = $("#txtQuestionId").val(), AnswerText = answerText };
+        $.ajax({
+            async: true,
+            type: 'GET',
+            dataType: 'json',
+            contentType: 'Application/json;charset=utf-8',
+            url: '/Quiz/saveCandidateAnswer',
+            data: candidateAnswer,
+            success: function (data) {
+                if (data.success === true) {
+                    alert(data.message);
+                    window.location.href = "/Quiz/GetFinalResult";
+
+                }
+            },
+            error: function (data) {
+                alert(data);
+            }
+
+
+        });
+    }
+
+    function loadQuestion() {
+        var answerText = " ";
+        $.each($("#tblQuestionOption tr").find("td:eq(0) input[type=radio]:checked"), function () {
+            answerText = $(this).val();
+        });
+        var candidateAnswer = { QuestionId = $("#txtQuestionId").val(), AnswerText = answerText };
+
+        $.ajax({
+            async: true,
+            type: 'GET',
+            dataType: 'HTML',
+            contentType: 'Application/json;charset=utf-8',
+            url: 'Quiz/UserQuestionAnswer',
+            data: candidateAnswer,
+            success: function (data) {
+                $("#divQuestions").html(data);
+            },
+            error: function (data) {
+                alert(data);
+            }
+
+
+        });
+
+    }
+</script>
+
+<br />
+<br />
+
+
+<div id="divQuestions">
+
+</div>
+
+
+
+
+
+

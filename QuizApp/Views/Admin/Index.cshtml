@@ -1,0 +1,156 @@
+﻿@model QuizApp.viewModels.QuestionViewModel
+@{
+    ViewBag.Title = "Admin page";
+}
+
+<br />
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm("Index", "Admin", FormMethod.Post))
+{
+    <div class="container">
+        <div class="form-group">
+            @Html.LabelFor(model => model.CategoryId)
+            @Html.DropDownListFor(model => model.CategoryId, Model.CategoryList, new { @class = "form-control", @id = "CategoryId" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.QuestionName)
+            @Html.TextAreaFor(model => model.QuestionName, new { @class = "form-control", @id = "txtQuestionName" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.OptionName)
+            @Html.TextBoxFor(model => model.OptionName, new { @class = "form-control", @id = "txtOptionName" })
+        </div>
+        <div class="form-group">
+            <input type="button" id="btnAddOption" class="btn btn-default" name="btnAddOption" value="Add option" />
+        </div>
+    </div>
+}
+
+<table class="table table-condensed" style="width:100%" id="tblOptions">
+</table>
+<div class="container">
+    <div class="form-group">
+        <input type="button" id="btnSave" class="btn btn-primary" name="btnSave" value="save" />
+    </div>
+</div>
+@section scripts{
+
+    <script>
+        $(document).ready(function () {
+            $("#btnAddOption").click(function () {
+                AddOptionToList();
+            });
+            $("#btnSave").click(function () {
+                AddQuestionAndOptions();
+            });
+        });
+
+        function AddQuestionAndOptions() {
+            if ($("#tblOptions tr").length !== 4) {
+                alert("Options shouldn't be more than 4 or less");
+                return false;
+            }
+
+            var answerText = "";
+            var answerValid = undefined;
+            $.each($("#tblOptions tr"), function () {
+                answerText = $(this).find("td:eq(0) input[type=radio]:checked").val();
+                if (answerText !== undefined) {
+                    answerValid = answerText;
+                }
+            });
+            if (answerValid === undefined) {
+                alert("select answer");
+                return false;
+            }
+
+            var answerTextData = "";
+            var options = [];
+            var QuestionWithOptionViewModel = {};
+            $.each($("#tblOptions tr"), function () {
+                answerText = $(this).find("td:eq(0) input[type=radio]:checked").val();
+                if (answerText !== undefined) {
+                    answerTextData = answerText;
+                }
+                options.push($(this).find("td:eq(0) input[type=radio]").val());
+            });
+
+            QuestionWithOptionViewModel.Options = options;
+            QuestionWithOptionViewModel.AnswerText = answerTextData;
+            QuestionWithOptionViewModel.CategoryId = $("#CategoryId").val();
+            QuestionWithOptionViewModel.QuestionName = $("#txtQuestionName").val();
+
+            $.ajax({
+                async: true,
+                type: 'post',
+                dataType: 'json',
+                data: JSON.stringify(QuestionWithOptionViewModel),
+                contentType: 'application/json ;charset=utf-8',
+                url: '/Admin/Index',
+                success: function (data) {
+                    if (data.success === true) {
+                        alert(data.message);
+                        $("#txtQuestionName").val("");
+                        $("#txtOptionName").val("");
+                        $("#txtQuestionName").focus();
+                        $("#tblOptions tr").remove();
+                        $("#CategoryId").val(1);
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                },
+                error: function () {
+                    alert("there is some error in adding question")
+                }
+            });
+
+        }
+        function AddOptionToList() {
+            if ($("#txtQuestionName").val() === "") {
+                alert("Question shouldn't be empty");
+                $("#txtQuestionName").focus();
+                return false;
+            }
+
+            if ($("#txtOptionName").val() === "") {
+                alert("option shouldn't be empty");
+                $("#txtOptionName").focus();
+                return false;
+            }
+
+            if ($("#tblOptions tr").length === 4) {
+                $("#txtOptionName").focus();
+                $("#txtOptionName").val("");
+                alert("Options shouldn't be more than 4");
+                return false;
+            }
+
+            var IsIssue = false;
+            $.each($("#tblOptions tr"), function () {
+                var listedOption = $(this).find("td:eq(0) input[type=radio]").val();
+                if (listedOption === $("#txtOptionName").val()) {
+                    $("#txtOptionName").focus();
+                    $("#txtOptionName").val("");
+                    alert("Option already listed");
+                    isIssue = true;
+                }
+
+            });
+            if (IsIssue === true) {
+                return false;
+            }
+
+            var optionName = $("#txtOptionName").val();
+            var rowItem = "<tr><td><input type ='radio' value=" + optionName + " name = 'optionName'/> " + optionName + "</td></tr>";
+            $("#tblOptions").append(rowItem);
+            $("#txtOptionName").focus();
+            $("#txtOptionName").val("");
+
+        }
+    </script>
+
+}

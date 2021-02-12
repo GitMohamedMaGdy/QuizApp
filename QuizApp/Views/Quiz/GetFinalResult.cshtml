@@ -1,0 +1,51 @@
+﻿@model IEnumerable<QuizApp.viewModels.ResultModel>
+@{
+    ViewBag.Title = "GetFinalResult";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<table style="width:100%" class="table table-bordered">
+    <thead>
+        <tr>
+            <td>
+                Question
+            </td>
+            <td>
+                Answer
+            </td>
+            <td>
+                Answer by user
+            </td>
+            <td>
+                status
+            </td>
+        </tr>
+
+    </thead>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @item.Question
+            </td>
+            <td>
+                @item.Answer
+            </td>
+            <td>
+                @item.AnswerUser
+            </td>
+            <td>
+                @if (item.status == "correct")
+                {
+                    <label style="color:green">@item.status</label>
+                }
+                else
+                {
+                    <label style="color:red">@item.status</label>
+
+                }
+            </td>
+        </tr>
+    }
+</table>
